@@ -64,6 +64,7 @@ function updateUserList(socketIds) {
 }
 
 const socket = io.connect("localhost:5000");
+//const socket = io.connect("192.168.5.20:5000");
 
 socket.on("update-user-list", ({ users }) => {
   updateUserList(users);
@@ -128,17 +129,40 @@ peerConnection.ontrack = function({ streams: [stream] }) {
   }
 };
 
+/*
 navigator.getUserMedia(
-  { video: true, audio: true },
-  stream => {
-    const localVideo = document.getElementById("local-video");
-    if (localVideo) {
-      localVideo.srcObject = stream;
+    { video: true, audio: true },
+    stream => {
+      const localVideo = document.getElementById("local-video");
+      if (localVideo) {
+        localVideo.srcObject = stream;
+      }
+  
+      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+    },
+    error => {
+      console.warn(error.message);
     }
-
-    stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
-  },
-  error => {
-    console.warn(error.message);
-  }
 );
+*/
+navigator.getUserMedia = navigator.getUserMedia ||
+                         navigator.webkitGetUserMedia ||
+                         navigator.mozGetUserMedia;
+
+if (navigator.getUserMedia) {
+   navigator.getUserMedia({ audio: true, video: { width: 1280, height: 720 } },
+      function(stream) {
+        const localVideo = document.getElementById("local-video");
+        if (localVideo) {
+          localVideo.srcObject = stream;
+        }
+    
+        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+        },
+      function(err) {
+         console.log("The following error occurred: " + err.name);
+      }
+   );
+} else {
+   console.log("getUserMedia not supported");
+}
