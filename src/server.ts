@@ -2,6 +2,8 @@ import express, { Application } from "express";
 import { Server as SocketIOServer } from "socket.io";
 import { createServer, Server as HTTPServer } from "http";
 import path from "path";
+import fs from "fs";
+import https from "https";
 
 export class Server {
     private httpServer: HTTPServer;
@@ -13,7 +15,12 @@ export class Server {
 
     constructor() {
         this.app = express();
-        this.httpServer = createServer(this.app);
+        const credentials = {
+          key: fs.readFileSync('key.pem'),
+          cert: fs.readFileSync('cert.pem')
+        };
+        //this.httpServer = createServer(this.app);
+        this.httpServer = https.createServer(credentials, this.app);
         this.io = new SocketIOServer(this.httpServer);
 
         //this.handleRoutes();
